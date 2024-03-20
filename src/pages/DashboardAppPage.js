@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 import { faker } from '@faker-js/faker';
 // @mui
@@ -25,13 +24,9 @@ import {
 
 export default function DashboardAppPage() {
   const theme = useTheme();
-  const {user, getUser} = useAuthContext();
+  const {user} = useAuthContext();
 
-  useEffect(() => {
-    if(!user){
-      getUser();
-    }
-  }, []);
+  
 
   return (
     <>

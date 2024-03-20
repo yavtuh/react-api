@@ -1,14 +1,16 @@
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
 import { filter } from 'lodash';
-import { sentenceCase } from 'change-case';
-import { useState } from 'react';
 // @mui
 import {
   Card,
   Table,
   Stack,
   Paper,
-  Avatar,
+  Dialog,
+  DialogActions,
+  DialogTitle,
   Button,
   Popover,
   Checkbox,
@@ -21,24 +23,22 @@ import {
   IconButton,
   TableContainer,
   TablePagination,
+  CircularProgress,
 } from '@mui/material';
 // components
-import Label from '../components/label';
+import api from '../api/api';
 import Iconify from '../components/iconify';
 import Scrollbar from '../components/scrollbar';
+
 // sections
 import { UserListHead, UserListToolbar } from '../sections/@dashboard/user';
-// mock
-import USERLIST from '../_mock/user';
-
-// ----------------------------------------------------------------------
-
+import useFetch from '../hooks/useFetch';
+// -------------------------------------------------------------------
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name', alignRight: false },
-  { id: 'company', label: 'Company', alignRight: false },
-  { id: 'role', label: 'Role', alignRight: false },
-  { id: 'isVerified', label: 'Verified', alignRight: false },
-  { id: 'status', label: 'Status', alignRight: false },
+  { id: 'name', label: 'Имя', alignRight: false },
+  { id: 'email', label: 'Email', alignRight: false },
+  { id: 'key', label: 'Ключ', alignRight: false },
+  { id: 'createdAt', label: 'Дата', alignRight: false },
   { id: '' },
 ];
 
@@ -73,8 +73,15 @@ function applySortFilter(array, comparator, query) {
   return stabilizedThis.map((el) => el[0]);
 }
 
-export default function UserPage() {
+// ----------------------------------------------------------------------
+
+export default function UsersPage() {
+  const [users, setUsers] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
+
   const [open, setOpen] = useState(null);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const [page, setPage] = useState(0);
 
@@ -88,8 +95,19 @@ export default function UserPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(5);
 
-  const handleOpenMenu = (event) => {
+  const navigate = useNavigate();
+
+  const { isLoading, error, data, setIsLoading, refetch } = useFetch(`/api/users`, 'get');
+
+  useEffect(() => {
+    if (data) {
+      setUsers(data.data);
+    }
+  }, [data]);
+
+  const handleOpenMenu = (event, id) => {
     setOpen(event.currentTarget);
+    setCurrentUserId(id);
   };
 
   const handleCloseMenu = () => {
@@ -104,7 +122,7 @@ export default function UserPage() {
 
   const handleSelectAllClick = (event) => {
     if (event.target.checked) {
-      const newSelecteds = USERLIST.map((n) => n.name);
+      const newSelecteds = users.map((n) => n.name);
       setSelected(newSelecteds);
       return;
     }
@@ -140,31 +158,82 @@ export default function UserPage() {
     setFilterName(event.target.value);
   };
 
-  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - USERLIST.length) : 0;
+  const handleEdit = () => {
+    navigate(`/dashboard/users/${currentUserId}/edit`);
+  };
 
-  const filteredUsers = applySortFilter(USERLIST, getComparator(order, orderBy), filterName);
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true);
+      await api.delete(`api/users/${currentUserId}`);
+      const updateUsers = users.filter((user) => user.id !== currentUserId);
+      setUsers(updateUsers);
+      setIsModalOpen(false);
+      setOpen(null);
+    } catch (err) {
+      console.log(err.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const emptyRows = page > 0 ? Math.max(0, (1 + page) * rowsPerPage - users.length) : 0;
+
+  const filteredUsers = applySortFilter(users, getComparator(order, orderBy), filterName);
 
   const isNotFound = !filteredUsers.length && !!filterName;
+
+  if (isLoading) {
+    return (
+      <Container>
+        <Stack direction="row" alignItems="center" justifyContent="center" sx={{ height: 'calc(100vh - 200px)' }}>
+          <CircularProgress />
+        </Stack>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Stack direction="row" alignItems="center" justifyContent="center" sx={{ height: 'calc(100vh - 200px)' }}>
+          <Typography variant="subtitle2" noWrap>
+            {error}
+          </Typography>
+          <Button onClick={refetch}>Обновить</Button>
+        </Stack>
+      </Container>
+    );
+  }
 
   return (
     <>
       <Helmet>
-        <title> User | Minimal UI </title>
+        <title> Пользователи</title>
       </Helmet>
 
       <Container>
         <Stack direction="row" alignItems="center" justifyContent="space-between" mb={5}>
           <Typography variant="h4" gutterBottom>
-            User
+            Арбитражники
           </Typography>
-          <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
-            New User
-          </Button>
+          <Link to="create">
+            <Button variant="contained" startIcon={<Iconify icon="eva:plus-fill" />}>
+              Создать
+            </Button>
+          </Link>
         </Stack>
-
         <Card>
           <UserListToolbar numSelected={selected.length} filterName={filterName} onFilterName={handleFilterByName} />
-        
+
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800 }}>
               <Table>
@@ -172,14 +241,14 @@ export default function UserPage() {
                   order={order}
                   orderBy={orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={USERLIST.length}
+                  rowCount={users.length}
                   numSelected={selected.length}
                   onRequestSort={handleRequestSort}
                   onSelectAllClick={handleSelectAllClick}
                 />
                 <TableBody>
                   {filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
-                    const { id, name, role, status, company, avatarUrl, isVerified } = row;
+                    const { id, name, email, key, createdAt } = row;
                     const selectedUser = selected.indexOf(name) !== -1;
 
                     return (
@@ -190,25 +259,20 @@ export default function UserPage() {
 
                         <TableCell component="th" scope="row" padding="none">
                           <Stack direction="row" alignItems="center" spacing={2}>
-                            <Avatar alt={name} src={avatarUrl} />
                             <Typography variant="subtitle2" noWrap>
                               {name}
                             </Typography>
                           </Stack>
                         </TableCell>
 
-                        <TableCell align="left">{company}</TableCell>
+                        <TableCell align="left">{email}</TableCell>
 
-                        <TableCell align="left">{role}</TableCell>
+                        <TableCell align="left">{key}</TableCell>
 
-                        <TableCell align="left">{isVerified ? 'Yes' : 'No'}</TableCell>
-
-                        <TableCell align="left">
-                          <Label color={(status === 'banned' && 'error') || 'success'}>{sentenceCase(status)}</Label>
-                        </TableCell>
+                        <TableCell align="left">{createdAt}</TableCell>
 
                         <TableCell align="right">
-                          <IconButton size="large" color="inherit" onClick={handleOpenMenu}>
+                          <IconButton size="large" color="inherit" onClick={(event) => handleOpenMenu(event, id)}>
                             <Iconify icon={'eva:more-vertical-fill'} />
                           </IconButton>
                         </TableCell>
@@ -252,43 +316,56 @@ export default function UserPage() {
           <TablePagination
             rowsPerPageOptions={[5, 10, 25]}
             component="div"
-            count={USERLIST.length}
+            count={users.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
             onRowsPerPageChange={handleChangeRowsPerPage}
           />
         </Card>
-      </Container>
-
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 140,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75,
+        <Popover
+          open={Boolean(open)}
+          anchorEl={open}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          PaperProps={{
+            sx: {
+              p: 1,
+              width: 140,
+              '& .MuiMenuItem-root': {
+                px: 1,
+                typography: 'body2',
+                borderRadius: 0.75,
+              },
             },
-          },
-        }}
-      >
-        <MenuItem>
-          <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
-          Edit
-        </MenuItem>
+          }}
+        >
+          <MenuItem onClick={handleEdit}>
+            <Iconify icon={'eva:edit-fill'} sx={{ mr: 2 }} />
+            Изменить
+          </MenuItem>
 
-        <MenuItem sx={{ color: 'error.main' }}>
-          <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
-          Delete
-        </MenuItem>
-      </Popover>
+          <MenuItem onClick={handleOpenModal} sx={{ color: 'error.main' }}>
+            <Iconify icon={'eva:trash-2-outline'} sx={{ mr: 2 }} />
+            Удалить
+          </MenuItem>
+        </Popover>
+        <Dialog
+          open={isModalOpen}
+          onClose={handleCloseModal}
+          aria-labelledby="alert-dialog-title"
+          aria-describedby="alert-dialog-description"
+        >
+          <DialogTitle id="alert-dialog-title">{'Вы уверены, что хотите удалить пользователя?'}</DialogTitle>
+          <DialogActions>
+            <Button onClick={handleCloseModal}>Нет</Button>
+            <Button onClick={handleDelete} autoFocus>
+              Да
+            </Button>
+          </DialogActions>
+        </Dialog>
+      </Container>
     </>
   );
 }
