@@ -11,11 +11,17 @@ NavSection.propTypes = {
   data: PropTypes.array,
 };
 
-export default function NavSection({ data = [], ...other }) {
+export default function NavSection({ data = [], user , ...other }) {
+  
+  const filteredNavConfig = data.filter(item => {
+    if (!item.roles) return true;
+    return item.roles.includes(user?.role);
+  });
+
   return (
     <Box {...other}>
       <List disablePadding sx={{ p: 1 }}>
-        {data.map((item) => (
+        {filteredNavConfig.map((item) => (
           <NavItem key={item.title} item={item} />
         ))}
       </List>

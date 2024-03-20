@@ -27,6 +27,10 @@ export const AuthProvider = ({children}) => {
         getUser();
     }, [getUser]);
 
+    const isAdmin = () => {
+        return user?.role === 'admin';
+    };
+
     const login = async ({email, password}) => {
         await csrf();
         try {
@@ -48,9 +52,9 @@ export const AuthProvider = ({children}) => {
             console.error("Failed to logout:", error);
         }
     }
-    
 
-    return <AuthContext.Provider value={{ user, getUser, login, logout, isInitialized }} >
+
+    return <AuthContext.Provider value={{ user, getUser, setUser, login, logout, isInitialized, isAdmin }} >
         {children}
     </AuthContext.Provider>
 

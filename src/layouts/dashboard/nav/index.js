@@ -80,7 +80,7 @@ export default function Nav({ openNav, onCloseNav }) {
         </Link>
       </Box>
 
-      <NavSection data={navConfig} />
+      <NavSection data={navConfig} user={user}/>
 
       <Box sx={{ flexGrow: 1 }} />
 

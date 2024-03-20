@@ -1,8 +1,12 @@
 import { BrowserRouter } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
+
 // routes
 import Router from './routes';
 // theme
+
 import ThemeProvider from './theme';
 // components
 import { StyledChart } from './components/chart';
@@ -15,6 +19,7 @@ export default function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
         <ThemeProvider>
           <ScrollToTop />
           <StyledChart />
@@ -22,6 +27,7 @@ export default function App() {
             <Router />
           </AuthProvider>
         </ThemeProvider>
+        </LocalizationProvider>
       </BrowserRouter>
     </HelmetProvider>
   );
