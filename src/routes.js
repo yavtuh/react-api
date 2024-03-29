@@ -26,6 +26,7 @@ import FunnelPage from './pages/FunnelPage';
 import CreateFunnelPage from './pages/CreateFunnelPage';
 import EditCrmResponsePage from './pages/EditCrmResponsePage';
 import LeadPage from './pages/LeadPage';
+import LeadBuyerPage from './pages/LeadBuyerPage';
 // ----------------------------------------------------------------------
 
 function RouteGuard({ children, redirectTo, condition }) {
@@ -61,7 +62,9 @@ export default function Router() {
         { element: <Navigate to="/dashboard/app" />, index: true },
         { path: 'app', element: <DashboardAppPage /> },
         { path: 'user', element: <UserPage /> },
-        {path: 'leads', element: <LeadPage/>},
+        {path: 'leads', element: (
+          isAdmin() ? <LeadPage/> : <LeadBuyerPage/>
+        )},
         {
           path: 'users',
           element: (

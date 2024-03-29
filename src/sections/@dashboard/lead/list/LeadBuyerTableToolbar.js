@@ -6,7 +6,7 @@ import Iconify from '../../../../components/iconify';
 
 // ----------------------------------------------------------------------
 
-LeadTableToolbar.propTypes = {
+LeadBuyerTableToolbar.propTypes = {
   filterName: PropTypes.string,
   filterEndDate: PropTypes.instanceOf(Date),
   filterStartDate: PropTypes.instanceOf(Date),
@@ -23,15 +23,6 @@ LeadTableToolbar.propTypes = {
   filterSendEndDate: PropTypes.instanceOf(Date),
   onFilterSendStartDate: PropTypes.func,
   onFilterSendEndDate: PropTypes.func,
-  filterFunnel: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onFilterFunnel: PropTypes.func,
-  optionsFunnel: PropTypes.array,
-  filterBuyer: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onFilterBuyer: PropTypes.func,
-  optionsBuyer: PropTypes.array,
-  filterCrm: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onFilterCrm: PropTypes.func,
-  optionsCrm: PropTypes.array,
   filterLeadStatus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   filterSentStatus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   onFilterLeadStatus: PropTypes.func,
@@ -45,8 +36,7 @@ LeadTableToolbar.propTypes = {
   onFilterSentResult: PropTypes.func,
   onUpdateLeads: PropTypes.func
 };
-export default function LeadTableToolbar({
-  optionsFunnel,
+export default function LeadBuyerTableToolbar({
   filterStartDate,
   filterEndDate,
   filterName,
@@ -63,14 +53,6 @@ export default function LeadTableToolbar({
   filterSendEndDate,
   onFilterSendStartDate,
   onFilterSendEndDate,
-  filterFunnel,
-  onFilterFunnel,
-  filterBuyer,
-  onFilterBuyer,
-  optionsBuyer,
-  filterCrm,
-  onFilterCrm,
-  optionsCrm,
   filterLeadStatus,
   onFilterLeadStatus,
   optionsLeadStatuses,
@@ -129,93 +111,19 @@ export default function LeadTableToolbar({
             />
           </Stack>
           <Stack spacing={2} direction={{ xs: 'column', md: 'row' }} sx={{ display: 'flex', py: 2.5, px: 3 }}>
-            <TextField
+          <TextField
               fullWidth
-              select
-              label="Воронка"
-              value={filterFunnel}
-              onChange={onFilterFunnel}
-              SelectProps={{
-                MenuProps: {
-                  sx: { '& .MuiPaper-root': { maxHeight: 260 } },
-                },
+              value={filterUtm}
+              onChange={(event) => onFilterUtm(event.target.value)}
+              placeholder="UTM"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon={'eva:search-fill'} sx={{ color: 'text.disabled', width: 20, height: 20 }} />
+                  </InputAdornment>
+                ),
               }}
-              sx={{
-                textTransform: 'capitalize',
-              }}
-            >
-              <MenuItem
-                value="Все"
-                sx={{
-                  mx: 1,
-                  my: 0.5,
-                  borderRadius: 0.75,
-                  typography: 'body2',
-                  textTransform: 'capitalize',
-                }}
-              >
-                Все
-              </MenuItem>
-              {optionsFunnel.map((option) => (
-                <MenuItem
-                  key={option.id}
-                  value={option.id}
-                  sx={{
-                    mx: 1,
-                    my: 0.5,
-                    borderRadius: 0.75,
-                    typography: 'body2',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {option.name}
-                </MenuItem>
-              ))}
-            </TextField>
-
-            <TextField
-              fullWidth
-              select
-              label="Арбитражник"
-              value={filterBuyer}
-              onChange={onFilterBuyer}
-              SelectProps={{
-                MenuProps: {
-                  sx: { '& .MuiPaper-root': { maxHeight: 260 } },
-                },
-              }}
-              sx={{
-                textTransform: 'capitalize',
-              }}
-            >
-              <MenuItem
-                value="Все"
-                sx={{
-                  mx: 1,
-                  my: 0.5,
-                  borderRadius: 0.75,
-                  typography: 'body2',
-                  textTransform: 'capitalize',
-                }}
-              >
-                Все
-              </MenuItem>
-              {optionsBuyer.map((option) => (
-                <MenuItem
-                  key={option.id}
-                  value={option.id}
-                  sx={{
-                    mx: 1,
-                    my: 0.5,
-                    borderRadius: 0.75,
-                    typography: 'body2',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {option.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            />
 
             <TextField
               fullWidth
@@ -310,21 +218,7 @@ export default function LeadTableToolbar({
               fullWidth
               value={filterName}
               onChange={(event) => onFilterName(event.target.value)}
-              placeholder="Телефон, Почта, Имя"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Iconify icon={'eva:search-fill'} sx={{ color: 'text.disabled', width: 20, height: 20 }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <TextField
-              fullWidth
-              value={filterUtm}
-              onChange={(event) => onFilterUtm(event.target.value)}
-              placeholder="UTM"
+              placeholder="Почта, Имя"
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -348,49 +242,7 @@ export default function LeadTableToolbar({
               }}
             />
 
-            <TextField
-              fullWidth
-              select
-              label="Crm"
-              value={filterCrm}
-              onChange={onFilterCrm}
-              SelectProps={{
-                MenuProps: {
-                  sx: { '& .MuiPaper-root': { maxHeight: 260 } },
-                },
-              }}
-              sx={{
-                textTransform: 'capitalize',
-              }}
-            >
-              <MenuItem
-                value="Все"
-                sx={{
-                  mx: 1,
-                  my: 0.5,
-                  borderRadius: 0.75,
-                  typography: 'body2',
-                  textTransform: 'capitalize',
-                }}
-              >
-                Все
-              </MenuItem>
-              {optionsCrm.map((option) => (
-                <MenuItem
-                  key={option.id}
-                  value={option.id}
-                  sx={{
-                    mx: 1,
-                    my: 0.5,
-                    borderRadius: 0.75,
-                    typography: 'body2',
-                    textTransform: 'capitalize',
-                  }}
-                >
-                  {option.name}
-                </MenuItem>
-              ))}
-            </TextField>
+            
             <TextField
               fullWidth
               select

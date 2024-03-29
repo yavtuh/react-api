@@ -82,9 +82,9 @@ export default function LeadTableRow({ row, selected, onSelectRow, onViewRow, on
 
       <TableCell align="left">{extra}</TableCell>
 
-      <TableCell align="left">{userAgent}</TableCell>
+      <TableCell align="left" sx={{ maxWidth: '150px', wordWrap: 'break-word', whiteSpace: 'normal' }} >{userAgent}</TableCell>
 
-      <TableCell align="left">{utm}</TableCell>
+      <TableCell align="left" sx={{ maxWidth: '150px', wordWrap: 'break-word', whiteSpace: 'normal' }}>{utm}</TableCell>
 
       <TableCell align="left">{country}</TableCell>
 

@@ -264,6 +264,15 @@ const EditCrmCreatePage = () => {
                             }
                             label="Обязательное поле"
                           />
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={field.is_random}
+                                onChange={(e) => form.setFieldValue(`fields[${index}].is_random`, e.target.checked)}
+                              />
+                            }
+                            label="Рандомное значение"
+                          />
                           <Button
                             sx={{ color: 'error.main', width: '50%' }}
                             startIcon={<Iconify icon="eva:trash-2-outline" />}
@@ -283,6 +292,7 @@ const EditCrmCreatePage = () => {
                             field_type: '',
                             another_value: '',
                             is_required: true,
+                            is_random: false,
                           })
                         }
                       >
