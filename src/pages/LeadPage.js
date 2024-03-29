@@ -49,14 +49,14 @@ const TABLE_HEAD = [
   { id: 'firstName', label: 'Имя', align: 'left' },
   { id: 'lastName', label: 'Фамилия', align: 'left' },
   { id: 'email', label: 'Email', align: 'left' },
-  { id: 'phone', label: 'Телефон', align: 'center', width: 140 },
-  { id: 'crm', label: 'Crm', align: 'center', width: 140 },
+  { id: 'phone', label: 'Телефон', align: 'left', width: 140 },
+  { id: 'crm', label: 'Crm', align: 'left', width: 140 },
   { id: 'user', label: 'Арбитражник', align: 'left' },
   { id: 'funnel', label: 'Воронка', align: 'left' },
   { id: 'domain', label: 'Домен', align: 'left' },
-  { id: 'extra', label: 'Доп Данные', align: 'left' },
+  { id: 'extra', label: 'Доп Данные', align: 'left', width: 140  },
   { id: 'userAgent', label: 'userAgent', align: 'left' },
-  { id: 'utm', label: 'UTM', align: 'left' },
+  { id: 'utm', label: 'UTM', align: 'left' , width: 140 },
   { id: 'country', label: 'Страна', align: 'left' },
   { id: 'ip', label: 'IP', align: 'left' },
   { id: 'leadStatus', label: 'Статус Лида', align: 'left' },
@@ -85,13 +85,17 @@ const LeadPage = () => {
 
   const [sentStatuses, setSentStatuses] = useState([]);
 
+  const [sentResult, setSentResult] = useState([]);
+
   const initialFilter = {
     filterName: '',
+    filteUtm: '',
     filterFunnel: 'Все',
     filterCrm: 'Все',
     filterBuyer: 'Все',
     filterLeadStatus: 'Все',
     filterSentStatus: 'Все',
+    filterSentResult: 'Все',
     filterStartDate: null,
     filterEndDate: null,
     filterSendStartDate: null,
@@ -153,6 +157,13 @@ const LeadPage = () => {
     }));
   };
 
+  const handleFilterUtm = (filteUtm) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      filteUtm,
+    }));
+  };
+
   const handleFilterDomain = (filterDomain) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
@@ -187,11 +198,18 @@ const LeadPage = () => {
       filterLeadStatus: event.target.value,
     }));
   };
-
+  
   const handleFilterSentStatus = (event) => {
     setFilterParams((prevParams) => ({
       ...prevParams,
       filterSentStatus: event.target.value,
+    }));
+  };
+
+  const handleFilterSentResult = (event) => {
+    setFilterParams((prevParams) => ({
+      ...prevParams,
+      filterSentResult: event.target.value,
     }));
   };
 
@@ -230,21 +248,31 @@ const LeadPage = () => {
     });
   };
 
+  const updateLeads = () => {
+    fetchData({
+      ...filterParams,
+      page,
+    });
+  }
+  
   const isNotFound =
     (!tableData.length && !!filterParams.filterName) ||
+    (!tableData.length && !!filterParams.filteUtm) ||
     (!tableData.length && !!filterParams.filterFunnel) ||
     (!tableData.length && !!filterParams.filterBuyer) ||
     (!tableData.length && !!filterParams.filterLeadStatus) ||
     (!tableData.length && !!filterParams.filterSentStatus) ||
+    (!tableData.length && !!filterParams.filterSentResult) ||
     (!tableData.length && !!filterParams.filterEndDate) ||
     (!tableData.length && !!filterParams.filterStartDate) ||
     (!tableData.length && !!filterParams.filterSendStartDate) ||
     (!tableData.length && !!filterParams.filterDomain) ||
     (!tableData.length && !!filterParams.filterCrm) ||
     (!tableData.length && !!filterParams.filterSendEndDate);
-
+    
   const fetchData = async ({
     filterName,
+    filteUtm,
     filterFunnel,
     filterEndDate,
     filterStartDate,
@@ -254,6 +282,7 @@ const LeadPage = () => {
     filterSendEndDate,
     filterBuyer,
     filterLeadStatus,
+    filterSentResult,
     filterDomain,
     filterCrm,
   }) => {
@@ -262,12 +291,14 @@ const LeadPage = () => {
       const queryParams = new URLSearchParams({
         page,
         search: filterName,
+        utm: filteUtm,
         domain: filterDomain,
         funnel: filterFunnel === 'Все' ? '' : filterFunnel,
         crm: filterCrm === 'Все' ? '' : filterCrm,
         buyer: filterBuyer === 'Все' ? '' : filterBuyer,
         leadStatus: filterLeadStatus === 'Все' ? '' : filterLeadStatus,
         sentStatus: filterSentStatus === 'Все' ? '' : filterSentStatus,
+        sentResult: filterSentResult === 'Все' ? '' : filterSentResult,
         startDate: filterStartDate ? format(filterStartDate, 'yyyy-MM-dd') : '',
         endDate: filterEndDate ? format(filterEndDate, 'yyyy-MM-dd') : '',
         sendStartDate: filterSendStartDate ? format(filterSendStartDate, 'yyyy-MM-dd') : '',
@@ -330,6 +361,7 @@ const LeadPage = () => {
       setBuyers(response.data.buyers);
       setLeadStatuses(response.data.leadStatuses);
       setSentStatuses(response.data.sentStatuses);
+      setSentResult(response.data.sendResult);
       setCrms(response.data.crms);
     } catch (error) {
       if (error.response && error.response.status === 422) {
@@ -398,11 +430,13 @@ const LeadPage = () => {
           <Divider />
           <LeadTableToolbar
             filterName={filterParams.filterName}
+            filterUtm={filterParams.filterUtm}
             filterFunnel={filterParams.filterFunnel}
             filterCrm={filterParams.filterCrm}
             filterBuyer={filterParams.filterBuyer}
             filterLeadStatus={filterParams.filterLeadStatus}
             filterSentStatus={filterParams.filterSentStatus}
+            filterSentResult={filterParams.filterSentResult}
             filterStartDate={filterParams.filterStartDate}
             filterEndDate={filterParams.filterEndDate}
             filterSendStartDate={filterParams.filterSendStartDate}
@@ -412,12 +446,14 @@ const LeadPage = () => {
             setShowFilter={setShowFilter}
             handleApplyFilter={handleApplyFilter}
             onFilterName={handleFilterName}
+            onFilterUtm={handleFilterUtm}
             onFilterDomain={handleFilterDomain}
             onFilterFunnel={handleFilterFunnel}
             onFilterCrm={handleFilterCrm}
             onFilterBuyer={handleFilterBuyer}
             onFilterLeadStatus={handleFilterLeadStatus}
             onFilterSentStatus={handleFilterSentStatus}
+            onFilterSentResult={handleFilterSentResult}
             onFilterStartDate={(newValue) => {
               const startDate = startOfDay(newValue);
               setFilterParams((prevParams) => ({
@@ -451,7 +487,9 @@ const LeadPage = () => {
             optionsBuyer={buyers}
             optionsLeadStatuses={leadStatuses}
             optionsSentStatuses={sentStatuses}
+            optionsSentResult={sentResult}
             handleResetFilter={handleResetFilter}
+            onUpdateLeads={updateLeads}
           />
           {isLoading && (
             <div
